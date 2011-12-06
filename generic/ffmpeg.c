@@ -45,8 +45,8 @@ static int Lffmpeg_(Main_getFrame)(lua_State *L) {
       {
 	/*
          * Only decode video frames of interest */
-	avcodec_decode_video(v->pCodecCtx, v->pFrame, &v->frameFinished, 
-			     v->packet.data, v->packet.size);
+	avcodec_decode_video2(v->pCodecCtx, v->pFrame, &v->frameFinished, 
+                              &v->packet);
         /*
          * Did we get a video frame? */
 	if(v->frameFinished)
