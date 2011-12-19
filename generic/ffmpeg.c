@@ -3,7 +3,7 @@
 #else
 
 
-static THTensor * Lffmpeg_(Main_frame2tensor)(ffmpeg_ctx *v, THTensor *tensor) {
+static THTensor * Lffmpeg_(frame2tensor)(ffmpeg_ctx *v, THTensor *tensor) {
   THTensor_(resize3d)(tensor, v->dstW, v->dstH, 3);
   int x,y;
   int linesize = v->pFrameRGB->linesize[0];
@@ -20,14 +20,16 @@ static THTensor * Lffmpeg_(Main_frame2tensor)(ffmpeg_ctx *v, THTensor *tensor) {
 }
 
 
-static int Lffmpeg_(Main_getFrame)(lua_State *L) {
+static int Lffmpeg_(getFrame)(lua_State *L) {
   int w = 0;
   int h = 0;
-
+  AVPacket pkt1, *pkt = &pkt1;
+    
   ffmpeg_ctx *v = (ffmpeg_ctx *)luaL_checkudata(L, 1, FFMPEG_CONTEXT);
-  if (lua_isnumber(L, 2)) w = lua_tonumber(L, 2);
-  if (lua_isnumber(L, 3)) h = lua_tonumber(L, 3);
-  THTensor *tensor = (THTensor *)luaT_checkudata(L, 4, torch_(Tensor_id));
+  THTensor *tensor =
+    (THTensor *)luaT_checkudata(L, 2, torch_(Tensor_id));
+  if (lua_isnumber(L, 3)) w = lua_tonumber(L, 2);
+  if (lua_isnumber(L, 4)) h = lua_tonumber(L, 3);
 
 
   if (w==0) { w = v->pCodecCtx->width; }
@@ -36,17 +38,20 @@ static int Lffmpeg_(Main_getFrame)(lua_State *L) {
   /*
    * check if we need a new software scaling contex. */
   int resample_changed =  w != v->dstW || h != v->dstH; 
+  av_init_packet(pkt);
+  pkt->data = NULL;
+  pkt->size = 0;
   /*
    * Read frames and save first five frames to disk */
-  while(! v->frameFinished && (av_read_frame(v->pFormatCtx, &v->packet)>=0)){
+  while(! v->frameFinished && (av_read_frame(v->pFormatCtx, pkt)>=0)){
     /* 
      * Is this a packet from the video stream? */
-    if(v->packet.stream_index==v->videoStream)
+    if(pkt->stream_index==v->videoStream)
       {
 	/*
          * Only decode video frames of interest */
-	avcodec_decode_video2(v->pCodecCtx, v->pFrame, &v->frameFinished, 
-                              &v->packet);
+	avcodec_decode_video2(v->pCodecCtx, v->pFrame,
+                              &v->frameFinished, pkt);
         /*
          * Did we get a video frame? */
 	if(v->frameFinished)
@@ -80,24 +85,24 @@ static int Lffmpeg_(Main_getFrame)(lua_State *L) {
       }
     
     /* Free the packet that was allocated by av_read_frame */
-    av_free_packet(&v->packet);
+    av_free_packet(pkt);
   }
 
   /* copy frame to tensor */
-  Lffmpeg_(Main_frame2tensor)(v, tensor);
+  Lffmpeg_(frame2tensor)(v, tensor);
 
   return 0;
 }
 
-static const struct luaL_Reg Lffmpeg_(Main__) [] = {
-  {"getFrame",  Lffmpeg_(Main_getFrame)},
+static const struct luaL_Reg Lffmpeg_(Methods) [] = {
+  {"getFrame",  Lffmpeg_(getFrame)},
   {NULL, NULL}
 };
 
-void Lffmpeg_(Main_init)(lua_State *L)
+void Lffmpeg_(Init)(lua_State *L)
 {
   luaT_pushmetaclass(L, torch_(Tensor_id));
-  luaT_registeratname(L, Lffmpeg_(Main__), "ffmpeg");
+  luaT_registeratname(L, Lffmpeg_(Methods), "ffmpeg");
 }
 
 
