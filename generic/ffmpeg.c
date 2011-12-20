@@ -7,9 +7,6 @@ static THTensor * Lffmpeg_(frame2tensor)(ffmpeg_ctx *v, THTensor *tensor) {
   THTensor_(resize3d)(tensor, 3, v->dstH, v->dstW);
   int x,y;
   int linesize = v->pFrameRGB->linesize[0];
-  printf("tensor [%ld,%ld] dest [%d,%d]\n",
-         tensor->size[1],tensor->size[2],
-         v->dstW,v->dstH);
   for (y=0; y<tensor->size[1]; y++)
     for (x=0; x<tensor->size[2]; x++) {
       THTensor_(set3d)(tensor, 0, y, x,
@@ -24,23 +21,23 @@ static THTensor * Lffmpeg_(frame2tensor)(ffmpeg_ctx *v, THTensor *tensor) {
 
 
 static int Lffmpeg_(getFrame)(lua_State *L) {
-  int w = 0;
-  int h = 0;
   AVPacket pkt1, *pkt = &pkt1;
     
   ffmpeg_ctx *v = (ffmpeg_ctx *)luaL_checkudata(L, 1, FFMPEG_CONTEXT);
   THTensor *tensor =
     (THTensor *)luaT_checkudata(L, 2, torch_(Tensor_id));
-  if (lua_isnumber(L, 3)) w = lua_tonumber(L, 2);
-  if (lua_isnumber(L, 4)) h = lua_tonumber(L, 3);
+  if (lua_isnumber(L, 3)) v->dstW = lua_tonumber(L, 3);
+  if (lua_isnumber(L, 4)) v->dstH = lua_tonumber(L, 4);
 
 
-  if (w==0) { w = v->pCodecCtx->width; }
-  if (h==0) { h = v->pCodecCtx->height;}
+  if (v->dstW==0) { v->dstW = v->pCodecCtx->width; }
+  if (v->dstH==0) { v->dstH = v->pCodecCtx->height;}
   v->frameFinished = 0;
   /*
    * check if we need a new software scaling contex. */
-  int resample_changed =  w != v->dstW || h != v->dstH; 
+  int resample_changed =
+    v->pCodecCtx->width != v->dstW ||
+    v->pCodecCtx->height != v->dstH; 
   av_init_packet(pkt);
   pkt->data = NULL;
   pkt->size = 0;
@@ -66,23 +63,21 @@ static int Lffmpeg_(getFrame)(lua_State *L) {
 	      
 	      v->img_convert_ctx =  NULL;
 	      v->img_convert_ctx = 
-		sws_getContext(v->pCodecCtx->width, v->pCodecCtx->height, 
+		sws_getContext(v->pCodecCtx->width,
+                               v->pCodecCtx->height, 
 			       v->pCodecCtx->pix_fmt, 
-			       w, h, PIX_FMT_RGB24, SWS_BICUBIC,
+			       v->dstW, v->dstH,
+                               PIX_FMT_RGB24, SWS_BICUBIC,
 			       NULL, NULL, NULL);
 	      if(v->img_convert_ctx == NULL) {
 		THError("<ffmpeg.getFrame> Cannot initialize the conversion context!");
 	      }
-	      /*
-               * store the current output w and height as I don't have
-               * access to the malformed img_convert_ctx struct */
-	      v->dstW = w;
-	      v->dstH = h;
 	    }
 	    int ret = sws_scale(v->img_convert_ctx, 
 				(const uint8_t * const*)v->pFrame->data,
                                 v->pFrame->linesize, 0, 
-				v->pCodecCtx->height, v->pFrameRGB->data, 
+				v->pCodecCtx->height,
+                                v->pFrameRGB->data, 
 				v->pFrameRGB->linesize);
 	  }
       }
