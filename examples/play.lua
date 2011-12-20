@@ -17,8 +17,6 @@ win = image.display(a)
 for i = 1,1000 do  
    sys.tic() 
    ffmpeg.double.getFrame(f,a)
-   print("grab frame: "..sys.toc())
    win = image.display{win=win,image={a}}
-   print("disp frame: "..sys.toc())
    print("FPS: ".. 1/sys.toc())
 end

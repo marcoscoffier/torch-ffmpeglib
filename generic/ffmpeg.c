@@ -22,13 +22,16 @@ static THTensor * Lffmpeg_(frame2tensor)(ffmpeg_ctx *v, THTensor *tensor) {
 
 static int Lffmpeg_(getFrame)(lua_State *L) {
   AVPacket pkt1, *pkt = &pkt1;
-    
+
+  
   ffmpeg_ctx *v = (ffmpeg_ctx *)luaL_checkudata(L, 1, FFMPEG_CONTEXT);
+
+  printf("getframe fname: %s\n",v->filename);
+
   THTensor *tensor =
     (THTensor *)luaT_checkudata(L, 2, torch_(Tensor_id));
   if (lua_isnumber(L, 3)) v->dstW = lua_tonumber(L, 3);
   if (lua_isnumber(L, 4)) v->dstH = lua_tonumber(L, 4);
-
 
   if (v->dstW==0) { v->dstW = v->pCodecCtx->width; }
   if (v->dstH==0) { v->dstH = v->pCodecCtx->height;}
@@ -60,7 +63,9 @@ static int Lffmpeg_(getFrame)(lua_State *L) {
              * Convert the image into RBG24 */
 	    if(v->img_convert_ctx == NULL || resample_changed ) {
 
-	      
+              if (v->img_convert_ctx)
+                sws_freeContext(v->img_convert_ctx);
+    	      
 	      v->img_convert_ctx =  NULL;
 	      v->img_convert_ctx = 
 		sws_getContext(v->pCodecCtx->width,
