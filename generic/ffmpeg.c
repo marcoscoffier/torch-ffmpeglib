@@ -26,8 +26,6 @@ static int Lffmpeg_(getFrame)(lua_State *L) {
   
   ffmpeg_ctx *v = (ffmpeg_ctx *)luaL_checkudata(L, 1, FFMPEG_CONTEXT);
 
-  printf("getframe fname: %s\n",v->filename);
-
   THTensor *tensor =
     (THTensor *)luaT_checkudata(L, 2, torch_(Tensor_id));
   if (lua_isnumber(L, 3)) v->dstW = lua_tonumber(L, 3);
@@ -62,11 +60,7 @@ static int Lffmpeg_(getFrame)(lua_State *L) {
 	    /*
              * Convert the image into RBG24 */
 	    if(v->img_convert_ctx == NULL || resample_changed ) {
-
-              if (v->img_convert_ctx)
-                sws_freeContext(v->img_convert_ctx);
-    	      
-	      v->img_convert_ctx =  NULL;
+              v->img_convert_ctx =  NULL;
 	      v->img_convert_ctx = 
 		sws_getContext(v->pCodecCtx->width,
                                v->pCodecCtx->height, 
@@ -74,7 +68,7 @@ static int Lffmpeg_(getFrame)(lua_State *L) {
 			       v->dstW, v->dstH,
                                PIX_FMT_RGB24, SWS_BICUBIC,
 			       NULL, NULL, NULL);
-	      if(v->img_convert_ctx == NULL) {
+              if(v->img_convert_ctx == NULL) {
 		THError("<ffmpeg.getFrame> Cannot initialize the conversion context!");
 	      }
 	    }
