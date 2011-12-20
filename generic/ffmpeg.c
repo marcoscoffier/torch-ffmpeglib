@@ -4,16 +4,19 @@
 
 
 static THTensor * Lffmpeg_(frame2tensor)(ffmpeg_ctx *v, THTensor *tensor) {
-  THTensor_(resize3d)(tensor, v->dstW, v->dstH, 3);
+  THTensor_(resize3d)(tensor, 3, v->dstH, v->dstW);
   int x,y;
   int linesize = v->pFrameRGB->linesize[0];
+  printf("tensor [%ld,%ld] dest [%d,%d]\n",
+         tensor->size[1],tensor->size[2],
+         v->dstW,v->dstH);
   for (y=0; y<tensor->size[1]; y++)
-    for (x=0; x<tensor->size[0]; x++) {
-      THTensor_(set3d)(tensor, x, y, 0, 
+    for (x=0; x<tensor->size[2]; x++) {
+      THTensor_(set3d)(tensor, 0, y, x,
 		     (double)*(v->pFrameRGB->data[0]+(x*3)+(y*linesize)));
-      THTensor_(set3d)(tensor, x, y, 1, 
+      THTensor_(set3d)(tensor, 1, y, x,
 		     (double)*(v->pFrameRGB->data[0]+(x*3)+(y*linesize)+1));
-      THTensor_(set3d)(tensor, x, y, 2, 
+      THTensor_(set3d)(tensor, 2, y, x, 
 		     (double)*(v->pFrameRGB->data[0]+(x*3)+(y*linesize)+2));
     }
   return tensor;
