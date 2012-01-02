@@ -200,6 +200,13 @@ static int Lffmpeg_ctx_dstHeight (lua_State *L) {
   return 1;
 }
 
+static int Lffmpeg_ctx_filename (lua_State *L) {
+  ffmpeg_ctx *v = (ffmpeg_ctx *)luaL_checkudata(L, 1, FFMPEG_CONTEXT);
+  const char * s = v->filename; 
+  lua_pushstring(L,s);
+  return 1;
+}
+
 /*
  * Lffmpeg_ctx cleanup function */
 static int Lffmpeg_ctx_close(lua_State *L) {
@@ -221,42 +228,45 @@ static int Lffmpeg_init(lua_State *L){
     avformat_network_init();
 }
 
-
-
-/*
- * example of seeking from ffplay.c */
-/* if (cur_stream) { */
-/*   if (seek_by_bytes) { */
-/*     if (cur_stream->video_stream >= 0 && cur_stream->video_current_pos>=0){ */
-/*       pos= cur_stream->video_current_pos; */
-/*     }else if(cur_stream->audio_stream >= 0 && cur_stream->audio_pkt.pos>=0){ */
-/*       pos= cur_stream->audio_pkt.pos; */
-/*     }else */
-/*       pos = avio_tell(cur_stream->ic->pb); */
-/*     if (cur_stream->ic->bit_rate) */
-/*       incr *= cur_stream->ic->bit_rate / 8.0; */
-/*     else */
-/*       incr *= 180000.0; */
-/*     pos += incr; */
-/*     stream_seek(cur_stream, pos, incr, 1); */
-/*   } else { */
-/*     pos = get_master_clock(cur_stream); */
-/*     pos += incr; */
-/*     stream_seek(cur_stream, (int64_t)(pos * AV_TIME_BASE), (int64_t)(incr * AV_TIME_BASE), 0); */
-/*   } */
-/*  } */
-
-
+static int Lffmpeg_ctx_seek (lua_State *L) {
+  /* struct which holds all data about a video stream */
+  ffmpeg_ctx *v = (ffmpeg_ctx *)luaL_checkudata(L, 1, FFMPEG_CONTEXT);
+  /* pass timestamp string in HH:MM:SS:sss format */
+  const char * timestr = luaL_checkstring(L,2);
+  /* holds timestamp in microseconds */
+  int64_t target_timestamp_us; 
+  int ret = av_parse_time(&target_timestamp_us, timestr, 0);
+  if (ret < 0){
+    printf("WARNING error parsing timestamp for seek()\n");
+  } else {
+    printf("%s: seeking to position %0.3f\n",
+           v->filename, (double)target_timestamp_us / AV_TIME_BASE);
+    ret = avformat_seek_file(v->pFormatCtx,
+                             v->videoStream,
+                             INT64_MIN,
+                             target_timestamp_us,
+                             INT64_MAX,
+                             0);
+  
+    if (ret < 0) {
+      fprintf(stderr, "%s: could not seek to position %0.3f\n",
+              v->filename, (double)target_timestamp_us / AV_TIME_BASE);
+    }
+  }
+  lua_pushnumber(L,ret);
+  return 1;
+}
 
 static const struct luaL_reg ffmpeg_ctx_methods [] = {
   {"__gc",       Lffmpeg_ctx_close},
   {"close",      Lffmpeg_ctx_close},
   {"open",       Lffmpeg_ctx_open},
+  {"seek",       Lffmpeg_ctx_seek},
   {"rawWidth",   Lffmpeg_ctx_rawWidth},
   {"rawHeight",  Lffmpeg_ctx_rawHeight}, 
   {"dstWidth",   Lffmpeg_ctx_dstWidth},
   {"dstHeight",  Lffmpeg_ctx_dstHeight},
-  /* {"seek",       Lffmpeg_ctx_seek}, */
+  {"filename",   Lffmpeg_ctx_filename},
   {NULL, NULL}  /* sentinel */
 };
 
@@ -275,10 +285,10 @@ static const void* torch_DoubleTensor_id = NULL;
 DLL_EXPORT int luaopen_libffmpeg(lua_State *L)
 {
   /* create ffmpeg_ctx metatable */
-   luaL_newmetatable(L, FFMPEG_CONTEXT);
-   lua_createtable(L, 0, sizeof(ffmpeg_ctx_methods) / sizeof(luaL_reg) - 1);
+  luaL_newmetatable(L, FFMPEG_CONTEXT); 
+  lua_createtable(L, 0, sizeof(ffmpeg_ctx_methods) / sizeof(luaL_reg) - 1); 
    luaL_register(L,"ffmpeg",ffmpeg_ctx_methods);
-   lua_setfield(L, -2 , "__index");
+   /* lua_setfield(L, -2 , "__index"); */
 
    luaL_register(L, "ffmpeglib", ffmpeg_lib);
    
