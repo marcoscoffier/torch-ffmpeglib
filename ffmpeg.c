@@ -67,6 +67,7 @@ static int Lffmpeg_ctx_open (lua_State *L) {
   
    int i = 0;
    /* Open video file */
+
    v->pFormatCtx = avformat_alloc_context();
    if(avformat_open_input(&(v->pFormatCtx), v->filename, NULL, NULL)!=0)
      THError("<ffmeg.vid> Couldn't open file"); 
@@ -225,7 +226,7 @@ static int Lffmpeg_init(lua_State *L){
     avfilter_register_all();
 #endif
     av_register_all();
-    avformat_network_init();
+    //    avformat_network_init();
 }
 
 static int Lffmpeg_ctx_seek (lua_State *L) {
