@@ -1,12 +1,14 @@
 require 'torch'
 require 'image'
-require 'libffmpeg'
+require 'ffmpeglib'
 
 w = 640
 h = 480
 
 fname = "/home/data/gopro_360/washsq_2/0.mp4"
+
 ffmpeglib.init()
+
 f = ffmpeg.open(fname,w,h)
 a = torch.Tensor()
 

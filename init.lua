@@ -1,6 +1,6 @@
 -- load C lib
 require 'libffmpeglib'
-require 'XLearn'
+-- require 'XLearn'
 
 local load_help_desc =
    [[Loads a video using the ffmpeg library.]]
@@ -10,7 +10,7 @@ if not ffmpeglib then
    module('ffmpeglib', package.seeall)
 
    load = function (...)
-	     local args, filename = toolBox.unpack(
+	     local args, filename = dok.unpack(
 		{...},
 		'ffmpeglib.load', load_help_desc,
 		{arg='filename', type='string', 
@@ -19,7 +19,7 @@ if not ffmpeglib then
 	  end
 
    getFrame = function (...)
-		 local args, v, w, h, tensor = toolBox.unpack(
+		 local args, v, w, h, tensor = dok.unpack(
 		    {...},
 		    'ffmpeglib.getFrame',
 		    [[ gets the next frame from the video ]],
@@ -36,7 +36,7 @@ if not ffmpeglib then
 		 return libffmpeglib.getFrame(v,w,h,tensor)
 	      end
    rawWidth = function (...)
-		 local args, v = toolBox.unpack(
+		 local args, v = dok.unpack(
 		    {...},
 		    'ffmpeglib.rawWidth',
 		    [[ return width of raw video ]],
@@ -45,7 +45,7 @@ if not ffmpeglib then
 		 return libffmpeglib.rawWidth(v)
 	      end
    rawHeight = function (...)
-		 local args, v = toolBox.unpack(
+		 local args, v = dok.unpack(
 		    {...},
 		    'ffmpeglib.rawHeight',
 		    [[ return height of raw video ]],
@@ -54,7 +54,7 @@ if not ffmpeglib then
 		 return libffmpeglib.rawHeight(v)
 	      end
    dstWidth = function (...)
-		 local args, v = toolBox.unpack(
+		 local args, v = dok.unpack(
 		    {...},
 		    'ffmpeglib.dstWidth',
 		    [[ return width of scaled video ]],
@@ -63,7 +63,7 @@ if not ffmpeglib then
 		 return libffmpeglib.dstWidth(v)
 	      end
    dstHeight = function (...)
-		 local args, v = toolBox.unpack(
+		 local args, v = dok.unpack(
 		    {...},
 		    'ffmpeglib.dstHeight',
 		    [[ return height of scaled video ]],
@@ -72,7 +72,7 @@ if not ffmpeglib then
 		 return libffmpeglib.dstHeight(v)
 	      end
    play = function (...)
-	     local args, filename, w, h = toolBox.unpack(
+	     local args, filename, w, h = dok.unpack(
 		{...},
 		'ffmpeglib.play',
 		[[ simple player using the ffmpeg lib and image.display ]],

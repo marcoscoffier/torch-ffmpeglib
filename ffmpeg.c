@@ -283,7 +283,7 @@ static const void* torch_DoubleTensor_id = NULL;
 #include "generic/ffmpeg.c"
 #include "THGenerateFloatTypes.h"
 
-DLL_EXPORT int luaopen_libffmpeg(lua_State *L)
+DLL_EXPORT int luaopen_libffmpeglib(lua_State *L)
 {
   /* create ffmpeg_ctx metatable */
   luaL_newmetatable(L, FFMPEG_CONTEXT); 
