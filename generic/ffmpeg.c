@@ -8,14 +8,15 @@ static THTensor * Lffmpeg_(frame2tensor)(ffmpeg_ctx *v, THTensor *tensor) {
   real * dataR = THTensor_(data)(tensor);
   real * dataG = dataR +    tensor->stride[0];
   real * dataB = dataR + (2*tensor->stride[0]);
+  real s = 1.0/255.0;
   long npixels = tensor->size[1]*tensor->size[2];
   int linesize = v->pFrameRGB->linesize[0];
   int x,y;
   for (y=0; y<tensor->size[1]; y++)
     for (x=0; x<tensor->size[2]; x++) {
-      *dataR = (real)*(v->pFrameRGB->data[0]+(x*3)+(y*linesize)); 
-      *dataG = (real)*(v->pFrameRGB->data[0]+(x*3)+(y*linesize)+1);
-      *dataB = (real)*(v->pFrameRGB->data[0]+(x*3)+(y*linesize)+2);
+      *dataR = s * (real)*(v->pFrameRGB->data[0]+(x*3)+(y*linesize)); 
+      *dataG = s * (real)*(v->pFrameRGB->data[0]+(x*3)+(y*linesize)+1);
+      *dataB = s * (real)*(v->pFrameRGB->data[0]+(x*3)+(y*linesize)+2);
       dataR++;
       dataG++;
       dataB++;

@@ -33,7 +33,10 @@ if not ffmpeglib then
 		     help='tensor which will contain image information',
 		     default=torch.Tensor()}
 		 )
-		 return libffmpeglib.getFrame(v,w,h,tensor)
+                 -- make values between 0/1 same as the image.load()
+                 -- calls
+                 libffmpeglib.getFrame(v,w,h,tensor)
+		 return tensor
 	      end
    rawWidth = function (...)
 		 local args, v = dok.unpack(

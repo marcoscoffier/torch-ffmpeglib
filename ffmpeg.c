@@ -227,42 +227,43 @@ static int Lffmpeg_init(lua_State *L){
 #endif
     av_register_all();
     //    avformat_network_init();
+    return 0;
 }
 
-static int Lffmpeg_ctx_seek (lua_State *L) {
-  /* struct which holds all data about a video stream */
-  ffmpeg_ctx *v = (ffmpeg_ctx *)luaL_checkudata(L, 1, FFMPEG_CONTEXT);
-  /* pass timestamp string in HH:MM:SS:sss format */
-  const char * timestr = luaL_checkstring(L,2);
-  /* holds timestamp in microseconds */
-  int64_t target_timestamp_us; 
-  int ret = av_parse_time(&target_timestamp_us, timestr, 0);
-  if (ret < 0){
-    printf("WARNING error parsing timestamp for seek()\n");
-  } else {
-    printf("%s: seeking to position %0.3f\n",
-           v->filename, (double)target_timestamp_us / AV_TIME_BASE);
-    ret = avformat_seek_file(v->pFormatCtx,
-                             v->videoStream,
-                             INT64_MIN,
-                             target_timestamp_us,
-                             INT64_MAX,
-                             0);
+/* static int Lffmpeg_ctx_seek (lua_State *L) { */
+/*   /\* struct which holds all data about a video stream *\/ */
+/*   ffmpeg_ctx *v = (ffmpeg_ctx *)luaL_checkudata(L, 1, FFMPEG_CONTEXT); */
+/*   /\* pass timestamp string in HH:MM:SS:sss format *\/ */
+/*   const char * timestr = luaL_checkstring(L,2); */
+/*   /\* holds timestamp in microseconds *\/ */
+/*   int64_t target_timestamp_us;  */
+/*   int ret = av_parse_time(&target_timestamp_us, timestr, 0); */
+/*   if (ret < 0){ */
+/*     printf("WARNING error parsing timestamp for seek()\n"); */
+/*   } else { */
+/*     printf("%s: seeking to position %0.3f\n", */
+/*            v->filename, (double)target_timestamp_us / AV_TIME_BASE); */
+/*     ret = avformat_seek_file(v->pFormatCtx, */
+/*                              v->videoStream, */
+/*                              INT64_MIN, */
+/*                              target_timestamp_us, */
+/*                              INT64_MAX, */
+/*                              0); */
   
-    if (ret < 0) {
-      fprintf(stderr, "%s: could not seek to position %0.3f\n",
-              v->filename, (double)target_timestamp_us / AV_TIME_BASE);
-    }
-  }
-  lua_pushnumber(L,ret);
-  return 1;
-}
+/*     if (ret < 0) { */
+/*       fprintf(stderr, "%s: could not seek to position %0.3f\n", */
+/*               v->filename, (double)target_timestamp_us / AV_TIME_BASE); */
+/*     } */
+/*   } */
+/*   lua_pushnumber(L,ret); */
+/*   return 1; */
+/* } */
 
 static const struct luaL_reg ffmpeg_ctx_methods [] = {
   {"__gc",       Lffmpeg_ctx_close},
   {"close",      Lffmpeg_ctx_close},
   {"open",       Lffmpeg_ctx_open},
-  {"seek",       Lffmpeg_ctx_seek},
+  //{"seek",       Lffmpeg_ctx_seek},
   {"rawWidth",   Lffmpeg_ctx_rawWidth},
   {"rawHeight",  Lffmpeg_ctx_rawHeight}, 
   {"dstWidth",   Lffmpeg_ctx_dstWidth},
