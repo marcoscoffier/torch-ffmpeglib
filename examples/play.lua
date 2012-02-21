@@ -9,7 +9,7 @@ w = 640
 h = 480
 
 fname = "/home/data/gopro_360/washsq_2/0.mp4"
-
+--fname = "/home/data/gopro_360/washsq_2/front_1280x240.mp4"
 ffmpeglib.init()
 
 f = ffmpeg.open(fname,w,h)
