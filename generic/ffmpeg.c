@@ -9,7 +9,6 @@ static THTensor * Lffmpeg_(frame2tensor)(ffmpeg_ctx *v, THTensor *tensor) {
   real * dataG = dataR +    tensor->stride[0];
   real * dataB = dataR + (2*tensor->stride[0]);
   real s = 1.0/255.0;
-  long npixels = tensor->size[1]*tensor->size[2];
   int linesize = v->pFrameRGB->linesize[0];
   int x,y;
   for (y=0; y<tensor->size[1]; y++)
@@ -28,7 +27,6 @@ static THTensor * Lffmpeg_(frame2tensor)(ffmpeg_ctx *v, THTensor *tensor) {
 static int Lffmpeg_(getFrame)(lua_State *L) {
   AVPacket pkt1, *pkt = &pkt1;
 
-  
   ffmpeg_ctx *v = (ffmpeg_ctx *)luaL_checkudata(L, 1, FFMPEG_CONTEXT);
 
   THTensor *tensor =
@@ -77,12 +75,12 @@ static int Lffmpeg_(getFrame)(lua_State *L) {
 		THError("<ffmpeg.getFrame> Cannot initialize the conversion context!");
 	      }
 	    }
-	    int ret = sws_scale(v->img_convert_ctx, 
-				(const uint8_t * const*)v->pFrame->data,
-                                v->pFrame->linesize, 0, 
-				v->pCodecCtx->height,
-                                v->pFrameRGB->data, 
-				v->pFrameRGB->linesize);
+	    sws_scale(v->img_convert_ctx, 
+                      (const uint8_t * const*)v->pFrame->data,
+                      v->pFrame->linesize, 0, 
+                      v->pCodecCtx->height,
+                      v->pFrameRGB->data, 
+                      v->pFrameRGB->linesize);
 	  }
       }
     

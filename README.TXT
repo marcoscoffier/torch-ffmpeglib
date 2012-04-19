@@ -11,19 +11,12 @@ USAGE:
 
 INSTALLING FFMPEG:
 
-The ubuntu version in Oneric Ocelot is a bit old and there are many
-changes to the ffmpeg libraries.  This code works with the recent
-ffmpeg git master.  To install on Ubuntu follow these steps (following
-http://ubuntuforums.org/showthread.php?t=786095 except that we add the
---enabled-shared flag to configure and don't require x264)
+The api for ffmpeg keeps changing and this is quite frustrating.
 
-git clone git://source.ffmpeg.org/ffmpeg
-cd ffmpeg
-./configure --enable-gpl --enable-libfaac --enable-libmp3lame \
- --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libtheora \
- --enable-libvorbis --enable-nonfree --enable-postproc --enable-version3 \
- --enable-x11grab --enable-shared
-make
-sudo checkinstall --pkgname=ffmpeg --pkgversion="5:$(date +%Y%m%d%H%M)-git" \
- --backup=no --deldoc=yes --fstrans=no --default
-hash ffmpeg ffplay ffprobe
+Rather than use the most recent ffmpeg which broke too many things on ubuntu.
+I changed the code to work with the recent ubuntu's libav*-dev packaged libs
+(version 7.3).  
+
+  apt-get install libavcodec-dev libavdevice-dev libavfilter-dev \
+    libavformat-dev libavutil-dev libpostproc-dev libswscale-dev
+
